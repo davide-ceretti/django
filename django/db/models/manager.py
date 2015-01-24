@@ -2,6 +2,7 @@ import copy
 from importlib import import_module
 import inspect
 
+from django.core import checks
 from django.db import router
 from django.db.models.query import QuerySet
 from django.utils import six
@@ -118,7 +119,32 @@ class BaseManager(object):
             )
 
     def check(self, **kwargs):
-        return []
+        errors = []
+        error = self._check_manager_name_does_not_clash()
+        if error is not None:
+            errors.append(error)
+        return errors
+
+    def _check_manager_name_does_not_clash(self):
+        model_related_objects = self.model._meta.related_objects
+        related_names = (
+            related_object.related_name
+            for related_object in model_related_objects
+        )
+        clashing_names = sum(
+            1
+            for related_name in related_names
+            if related_name == self.name
+        )
+        if clashing_names:
+            error_kwargs = {
+                "msg": "Oops",
+                "hint": "Hint",
+                "obj": self.__class__,
+                "id": "managers.E001",
+            }
+            return checks.Error(**error_kwargs)
+
 
     @classmethod
     def _get_queryset_methods(cls, queryset_class):

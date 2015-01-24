@@ -1284,3 +1284,20 @@ class M2mThroughFieldsTests(IsolatedModelsTestCase):
                 obj=field,
                 id='fields.E337')]
         self.assertEqual(expected, errors)
+
+
+class RelatedQueryNameClashWithManagerTests(IsolatedModelsTestCase):
+    def test_related_name_clashes_with_manager(self):
+        class Parent(models.Model):
+            parents = models.Manager()
+            mentor = models.ForeignKey('self', related_name='parents')
+
+        errors = Parent.check()
+        error_kwargs = {
+            "msg": "related_name of field 'mentor' clashes with manager named 'parents'",
+            "hint": "Rename the manager or the related_name of the field",
+            "obj": models.Manager,
+            "id": "managers.E001",
+        }
+        expected = [Error(**error_kwargs), ]
+        self.assertEqual(errors, expected)

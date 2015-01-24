@@ -66,6 +66,12 @@ Models
   ``<alias>``.
 * **models.E020**: The ``<model>.check()`` class method is currently overridden.
 
+Managers
+~~~~~~~~
+
+* **managers.E001**: Manager name must be different than any relative field's related name.
+
+
 Fields
 ~~~~~~
 
